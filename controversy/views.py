@@ -53,13 +53,14 @@ class ControversyView(generic.DetailView):
 
         # factors and palette for factor_cmap function
         cfac = ["true", "false"]
-        pal = ("#ef8a62", "#67a9cf")
+        pal = ("#67a9cf", "#ef8a62")
 
         # the data which will be turned into a ColumnDataSource
-        data = {
+        science_data = {
             "weight": [],
             "name": [],
             "bool": [],
+            "description": [],
             "start_angle": [],
             "end_angle": [],
             "url": [],
@@ -67,22 +68,24 @@ class ControversyView(generic.DetailView):
 
         # populating data based on the Django object of this DetailView
         for point in obj.points.all():
-            data["name"].append(point.name)
-            if point.boolean:
-                data["bool"].append("true")
-            else:
-                data["bool"].append("false")
-            data["url"].append(point.url)
-            data["start_angle"].append(0)
-            data["end_angle"].append(0)
-            data["weight"].append(0)
+            if getattr(point, "data_set") == "data":
+                science_data["name"].append(point.name)
+                if point.boolean:
+                    science_data["bool"].append("true")
+                else:
+                    science_data["bool"].append("false")
+                science_data["description"].append(point.description)
+                science_data["url"].append(point.url)
+                science_data["start_angle"].append(0)
+                science_data["end_angle"].append(0)
+                science_data["weight"].append(0)
 
         # wedge angle calculations
-        percent = 1 / len(data["name"]) * 100
-        for i in range(len(data["weight"])):
-            data["weight"][i] = percent
+        percent = 1 / len(science_data["name"]) * 100
+        for i in range(len(science_data["weight"])):
+            science_data["weight"][i] = percent
 
-        radians1 = [radians((weight / 100) * 360) for weight in data["weight"]]
+        radians1 = [radians((weight / 100) * 360) for weight in science_data["weight"]]
 
         start_angle = [radians(0)]
         prev = start_angle[0]
@@ -92,11 +95,11 @@ class ControversyView(generic.DetailView):
 
         end_angle = start_angle[1:] + [radians(0)]
 
-        data["start_angle"] = start_angle
-        data["end_angle"] = end_angle
+        science_data["start_angle"] = start_angle
+        science_data["end_angle"] = end_angle
 
         # make the data into a bokeh compatible resource
-        source = ColumnDataSource(data=data)
+        source = ColumnDataSource(data=science_data)
 
         # plotting
         p = figure(
@@ -104,7 +107,7 @@ class ControversyView(generic.DetailView):
             title="Pie Chart",
             toolbar_location=None,
             tools="hover,tap",
-            tooltips="@name \n @url",
+            tooltips="@name : @description",
             x_range=(-0.5, 1.0),
         )
 
@@ -124,7 +127,6 @@ class ControversyView(generic.DetailView):
         taptool = p.select(type=TapTool)
         taptool.callback = OpenURL(url="@url")
         source.selected.indices = []
-        
 
         p.axis.axis_label = None
         p.axis.visible = False
@@ -134,4 +136,171 @@ class ControversyView(generic.DetailView):
 
         context["script"] = script
         context["div"] = div
+
+        # CHART 2 #
+
+        # wedge angle calculations
+
+        opinion_data = {
+            "weight": [],
+            "name": [],
+            "bool": [],
+            "description": [],
+            "start_angle": [],
+            "end_angle": [],
+            "url": [],
+        }
+
+        for point in obj.points.all():
+            if getattr(point, "data_set") == "opinion":
+                opinion_data["name"].append(point.name)
+                if point.boolean:
+                    opinion_data["bool"].append("true")
+                else:
+                    opinion_data["bool"].append("false")
+                opinion_data["description"].append(point.description)
+                opinion_data["url"].append(point.url)
+                opinion_data["start_angle"].append(0)
+                opinion_data["end_angle"].append(0)
+                opinion_data["weight"].append(0)
+
+        percent = (1 / len(opinion_data["name"]) if len(opinion_data["name"]) > 0 else 1)* 100
+        for i in range(len(opinion_data["weight"])):
+            opinion_data["weight"][i] = percent
+
+        radians1 = [radians((weight / 100) * 360) for weight in opinion_data["weight"]]
+
+        start_angle = [radians(0)]
+        prev = start_angle[0]
+        for k in radians1[:-1]:
+            start_angle.append(k + prev)
+            prev = k + prev
+
+        end_angle = start_angle[1:] + [radians(0)]
+
+        opinion_data["start_angle"] = start_angle
+        opinion_data["end_angle"] = end_angle
+
+        # make the data into a bokeh compatible resource
+        source = ColumnDataSource(data=opinion_data)
+
+        # plotting
+        p2 = figure(
+            height=350,
+            title="Pie Chart",
+            toolbar_location=None,
+            tools="hover,tap",
+            tooltips="@name : @description",
+            x_range=(-0.5, 1.0),
+        )
+
+        p2.wedge(
+            x=0,
+            y=1,
+            radius=0.4,
+            start_angle="start_angle",
+            end_angle="end_angle",
+            line_color="white",
+            fill_color=factor_cmap("bool", pal, factors=cfac),
+            legend_field="name",
+            source=source,
+        )
+
+        # enable taptool
+        taptool2 = p2.select(type=TapTool)
+        taptool2.callback = OpenURL(url="@url")
+        source.selected.indices = []
+
+        p2.axis.axis_label = None
+        p2.axis.visible = False
+        p2.grid.grid_line_color = None
+
+        script2, div2 = components(p2)
+
+        context["script2"] = script2
+        context["div2"] = div2
+
+        # CHART 3 #
+
+        # wedge angle calculations
+
+        advice_data = {
+            "weight": [],
+            "name": [],
+            "bool": [],
+            "description": [],
+            "start_angle": [],
+            "end_angle": [],
+            "url": [],
+        }
+
+        for point in obj.points.all():
+            if getattr(point, "data_set") == "advice":
+                advice_data["name"].append(point.name)
+                if point.boolean:
+                    advice_data["bool"].append("true")
+                else:
+                    advice_data["bool"].append("false")
+                advice_data["description"].append(point.description)
+                advice_data["url"].append(point.url)
+                advice_data["start_angle"].append(0)
+                advice_data["end_angle"].append(0)
+                advice_data["weight"].append(0)
+
+        percent = 1 / (len(advice_data["name"]) if len(advice_data["name"]) > 0 else 1) * 100
+        for i in range(len(advice_data["weight"])):
+            advice_data["weight"][i] = percent
+
+        radians1 = [radians((weight / 100) * 360) for weight in advice_data["weight"]]
+
+        start_angle = [radians(0)]
+        prev = start_angle[0]
+        for k in radians1[:-1]:
+            start_angle.append(k + prev)
+            prev = k + prev
+
+        end_angle = start_angle[1:] + [radians(0)]
+
+        advice_data["start_angle"] = start_angle
+        advice_data["end_angle"] = end_angle
+
+        # make the data into a bokeh compatible resource
+        source = ColumnDataSource(data=advice_data)
+
+        # plotting
+        p3 = figure(
+            height=350,
+            title="Pie Chart",
+            toolbar_location=None,
+            tools="hover,tap",
+            tooltips="@name : @description",
+            x_range=(-0.5, 1.0),
+        )
+
+        p3.wedge(
+            x=0,
+            y=1,
+            radius=0.4,
+            start_angle="start_angle",
+            end_angle="end_angle",
+            line_color="white",
+            fill_color=factor_cmap("bool", pal, factors=cfac),
+            legend_field="name",
+            source=source,
+        )
+
+        # enable taptool
+        taptool3 = p3.select(type=TapTool)
+        taptool3.callback = OpenURL(url="@url")
+        source.selected.indices = []
+
+        p3.axis.axis_label = None
+        p3.axis.visible = False
+        p3.grid.grid_line_color = None
+
+        script3, div3 = components(p3)
+
+        context["script3"] = script3
+        context["div3"] = div3
+
         return context

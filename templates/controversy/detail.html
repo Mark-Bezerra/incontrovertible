@@ -17,19 +17,21 @@
         {% endfor %}
     </section>
 
-    <h5>Science</h5>
-    <div class="chart-container" id="container">
-        {{div| safe}}
-    </div>
+    <div class="charts">
+        <h5>Science</h5>
+        <div class="chart-container" id="container">
+            {{div| safe}}
+        </div>
 
-    <h5>Opinions</h5>
-    <div class="chart-container" id="container">
-        {{div2| safe}}
-    </div>
+        <br><br><h5>Opinions</h5>
+        <div class="chart-container" id="container">
+            {{div2| safe}}
+        </div>
 
-    <h5>Advice</h5>
-    <div class="chart-container" id="container">
-        {{div3| safe}}
+        <br><br><h5>Advice</h5>
+        <div class="chart-container" id="container">
+            {{div3| safe}}
+        </div>
     </div>
 </div>
 {% endblock %}
