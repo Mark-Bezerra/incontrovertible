@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block content %}
+<section>
+    <h1 class="text-center title">Incontrovertible</h1>
+    <h4 class="text-center">Incontrovertible gives honest answer to all the greatest controversies.</h1>
+    
+    <ul>
+    {% for controversy in controversies %}
+        <li><a href="{{ controversy.get_absolute_url }}">{{controversy}}</a>,&nbsp;</li>
+    {% endfor %}
+    </ul>
+
+</section>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

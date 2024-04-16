@@ -1,0 +1,48 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block content %}
+<div class="controversy">
+    <section>
+        <!-- The view has passed in a 'controversy' object. Here its __str__(self) is used -->
+        <h1 class="title">Controversy: {{ controversy }}</h1>
+    </section>
+</div>
+<div>
+    <section class="detail">
+        {% for point in controversy.data_point_set.all %}
+        <h6>{{point.name}}:&nbsp;</h6>
+        <p>{{point.description}}</p>
+        <a href="{{point.url}}">Evidence</a>&nbsp;&nbsp;
+        {% endfor %}
+    </section>
+
+    <h5>Science</h5>
+    <div class="chart-container" id="container">
+        {{div| safe}}
+    </div>
+
+    <h5>Opinions</h5>
+    <div class="chart-container" id="container">
+        {{div2| safe}}
+    </div>
+
+    <h5>Advice</h5>
+    <div class="chart-container" id="container">
+        {{div3| safe}}
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+{% block after %}
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.4.0.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.4.0.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.4.0.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-3.4.0.min.js"></script>
+{{script| safe}}
+{{script2| safe}}
+{{script3| safe}}
+{% endblock %}
