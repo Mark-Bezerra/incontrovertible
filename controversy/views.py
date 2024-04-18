@@ -3,10 +3,12 @@ from typing import Any
 from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.views import generic
+from django.views.generic.edit import FormMixin
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.forms.models import model_to_dict
 
 import pandas as pd
@@ -31,6 +33,7 @@ from bokeh.palettes import Category20c, magma
 from bokeh.embed import components
 
 from .models import Controversy, Data_Point
+from .forms import ControversyForm, Data_PointForm
 
 
 class IndexView(generic.ListView):
@@ -42,9 +45,14 @@ class IndexView(generic.ListView):
         return Controversy.objects.order_by("name")
 
 
-class ControversyView(generic.DetailView):
+class ControversyView(FormMixin, generic.DetailView):
     model = Controversy
     template_name = "controversy/detail.html"
+    form_class = Data_PointForm
+    context_object_name = "controversy"
+
+    def get_success_url(self):
+        return reverse("detail")
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -81,7 +89,7 @@ class ControversyView(generic.DetailView):
                 science_data["weight"].append(0)
 
         # wedge angle calculations
-        percent = 1 / len(science_data["name"]) * 100
+        percent = (1 / len(science_data["name"]) if len(science_data["name"]) > 0 else 1)* 100
         for i in range(len(science_data["weight"])):
             science_data["weight"][i] = percent
 
@@ -302,5 +310,17 @@ class ControversyView(generic.DetailView):
 
         context["script3"] = script3
         context["div3"] = div3
+        context["form"] = Data_PointForm(initial={"controversy": self.object})
 
         return context
+
+    def post(self, request, *arts, **kwargs):
+        controversy = self.get_object()
+        form = Data_PointForm(request.POST)
+
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.controversy = controversy
+            obj.save()
+            return redirect('controversy:detail', controversy.slug)
+

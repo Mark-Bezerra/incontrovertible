@@ -8,6 +8,7 @@ class ConstroversyAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",),}
 
 class PointAdmin(admin.ModelAdmin):
+    list_display = ("controversy", "name", "data_set")
     pass
 
 

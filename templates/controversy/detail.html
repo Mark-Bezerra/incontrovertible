@@ -18,20 +18,33 @@
     </section>
 
     <div class="charts">
-        <h5>Science</h5>
+        <h5>Published</h5>
         <div class="chart-container" id="container">
             {{div| safe}}
         </div>
 
-        <br><br><h5>Opinions</h5>
+        <br><br>
+        <h5>Said</h5>
         <div class="chart-container" id="container">
             {{div2| safe}}
         </div>
 
-        <br><br><h5>Advice</h5>
+        <br><br>
+        <h5>Advised</h5>
         <div class="chart-container" id="container">
             {{div3| safe}}
         </div>
+    </div>
+</div>
+
+<div class="input container-fluid">
+    <div class="row justify-content-center">
+        <form class="col-6 border gy-4" method="post">
+            <h5>Add a Data-Point</h5>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
     </div>
 </div>
 {% endblock %}
